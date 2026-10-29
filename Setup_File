@@ -1,0 +1,57 @@
+#Step 1: Open the Firewall
+# Allow web traffic (HTTP) permanently
+sudo firewall-cmd --permanent --add-service=http
+
+# Reload the firewall to apply the changes
+sudo firewall-cmd --reload
+
+#Step 2: Install Apache, MariaDB, and PHP
+# Install the Apache web server, MariaDB database, PHP, and the PHP-MySQL connector
+sudo dnf install httpd mariadb-server php php-mysqlnd -y
+
+#Step 3: Start and Enable the Services
+
+# Start and enable Apache
+sudo systemctl start httpd
+sudo systemctl enable httpd
+
+# Start and enable MariaDB
+sudo systemctl start mariadb
+sudo systemctl enable mariadb
+
+ #Step 4: Secure and Set Up the Database
+
+#• Press Enter when asked for the current root password (it is blank).
+#• Switch to unix_socket authentication? Type n
+#• Change the root password? Type y and create a secure password. Remember this password for later!
+#• Press y for the remaining prompts (removes anonymous users, disables remote root login, removes test databases).
+
+sudo mysql_secure_installation
+
+
+#Step 5: Configure Permissions and SELinux
+
+# Set permissions so you don't always need 'sudo' to create your web files
+sudo chown -R $USER:apache /var/www/html
+sudo chmod -R 775 /var/www/html
+
+# CRITICAL FOR RHEL: Allow Apache to execute network pings and connect to databases
+sudo setsebool -P httpd_can_network_connect 1
+sudo setsebool -P httpd_enable_cgi 1
+
+#Step 6: Create the Database tables
+
+mysql -u root -p
+
+#Step 7: Create Your Files
+
+#Paste the db.php code provided earlier. Make sure to change $pass = ''; to your actual MariaDB password. Press Ctrl+O then Enter to save, and Ctrl+X to exit.
+
+nano /var/www/html/db.php
+
+nano /var/www/html/network.php
+nano /var/www/html/roms.php
+nano /var/www/html/catalog.php
+nano /var/www/html/recipes.php
+
+sudo systemctl restart httpd
